@@ -6,43 +6,14 @@
 
 'use strict';
 
-const fs = require('fs');
-const path = require('path');
-const app = require('express')();
-const morgan = require('morgan');
-const bodyParser = require('body-parser');
-const rotatingFileStream = require('rotating-file-stream');
-
 const config = require('./config.json');
 const logger = require('./logger');
 
-// set up body parser middleware
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({
-    extended: true
-}));
+// create the server
+const server = require('./server.js')();
 
-// ensure log directory exists
-var logDirectory = path.join(__dirname, 'log');
-fs.existsSync(logDirectory) || fs.mkdirSync(logDirectory);
+server.use('/api/v1', require('./api/api'));
 
-// create a rotating write stream
-var accessLogStream = rotatingFileStream('http-access.log', {
-    interval: '1d',
-    path: logDirectory
-});
-
-// add the logging middleware
-app.use(morgan('combined', {stream: accessLogStream}));
-
-app.get('/', (req, res) => {
-    res.json({
-        this: 'is a placeholder'
-    });
-});
-
-app.use('/api/v1', require('./api/api'));
-
-app.listen(config.port, () => {
+server.listen(config.httpServerPort, () => {
     logger.log('debug', `Server listening on port ${config.port}...`);
 });

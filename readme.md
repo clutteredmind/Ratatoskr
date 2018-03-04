@@ -1,4 +1,4 @@
-# Ratatoskr
+# [Ratatoskr](https://en.wikipedia.org/wiki/Ratatoskr)
 
 An image macro server
 
