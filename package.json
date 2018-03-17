@@ -3,6 +3,10 @@
   "version": "0.0.1",
   "description": "An image macro server",
   "main": "ratatoskr.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/clutteredmind/Ratatoskr.git"
+  },
   "scripts": {
     "monitor": "nodemon ratatoskr.js",
     "start": "node ratatoskr.js",
