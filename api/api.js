@@ -11,7 +11,7 @@ const path = require('path');
 const canvas = require('canvas');
 const router = require('express').Router();
 
-const util = require('./api-util');
+const apiUtil = require('./api-util');
 const logger = require('../logger');
 
 const {
@@ -26,23 +26,37 @@ router.get('/', (req, res) => {
 });
 
 router.post('/mock', (req, res) => {
-    if (req.body.stringToMock != undefined) {
-        var mockedString = util.mock(req.body.stringToMock);
+    if (req.body.topText != undefined) {
+        let topText = apiUtil.mock(req.body.topText);
 
-        var imageFile = fs.readFileSync(path.join(__dirname, '../', 'images', 'sponge.png'));
-        var image = new Image();
+        let imageFile = fs.readFileSync(path.join(__dirname, '../', 'images', 'sponge.png'));
+        let image = new Image();
         image.src = imageFile;
-        var newCanvas = new canvas(650, 381);
-        var context = newCanvas.getContext('2d');
+
+        let newCanvas = new canvas(image.width, image.height);
+        let context = newCanvas.getContext('2d');
 
         // draw the image to the canvas
         context.drawImage(image, 0, 0, image.width, image.height);
 
-        context.strokeStyle = 'rgba(0,0,0,0.5)';
+        context.lineWidth = 6;
+        context.fillStyle = 'white';
         context.font = '30px Impact';
+        context.strokeStyle = 'black';
 
-        var textMetrics = context.measureText(mockedString);
-        context.fillText(mockedString, 0, 30);
+        let topTextMetrics = context.measureText(topText);
+
+        // add top text
+        context.strokeText(topText, (image.width / 2 - topTextMetrics.width / 2), 30);
+        context.fillText(topText, (image.width / 2 - topTextMetrics.width / 2), 30);
+
+        // add bottom text, if there is any
+        if (req.body.bottomText) {
+            let bottomText = apiUtil.mock(req.body.bottomText);
+            let bottomTextMetrics = context.measureText(bottomText);
+            context.strokeText(bottomText, (image.width / 2 - bottomTextMetrics.width / 2), image.height - 30);
+            context.fillText(bottomText, (image.width / 2 - bottomTextMetrics.width / 2), image.height - 30);
+        }
 
         res.send({
             url: newCanvas.toDataURL()
@@ -50,7 +64,7 @@ router.post('/mock', (req, res) => {
     } else {
         logger.log('error', 'Incorrect POST body: ' + JSON.stringify(req.body));
         res.json({
-            error: 'Incorrect POST body. Expected "stringToMock"'
+            error: 'Incorrect POST body. Expected "topText" and optional "bottomText"'
         });
     }
 });
